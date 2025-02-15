@@ -1,0 +1,14 @@
+{{ range .Values.podtrackerConfiguration }}
+apiVersion: networking.aurora.gc.ca/v1
+kind: PodTracker
+metadata:
+  name: {{ .name }}
+  labels: {{ include "podtracker.labels" $ | nindent 4 }}
+spec:
+  {{- if .backendWriterConfig }}
+  backendWriterConfig: {{ toYaml .backendWriterConfig | nindent 4 }}
+  {{- end }}
+  {{- if .nsToWatch }}
+  nsToWatch: {{ toYaml .nsToWatch | nindent 4 }}
+  {{- end }}
+{{ end }}

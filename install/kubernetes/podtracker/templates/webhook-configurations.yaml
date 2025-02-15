@@ -1,0 +1,60 @@
+{{- if .Values.webhooksEnabled -}}
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: {{ include "webhook.fullname" . }}-mutating-webhook-configuration
+  labels: {{ include "webhook.labels" . | nindent 4 }}
+  annotations:
+    cert-manager.io/inject-ca-from: {{ include "webhook.certificate" . }}
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: {{ include "webhook.fullname" . }}
+      namespace: {{ .Release.Namespace }}
+      path: /mutate-networking-aurora-gc-ca-v1-podtracker
+  failurePolicy: Fail
+  name: mpodtracker.kb.io
+  rules:
+  - apiGroups:
+    - networking.aurora.gc.ca
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - podtrackers
+  sideEffects: None
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: {{ include "webhook.fullname" . }}-validating-webhook-configuration
+  labels: {{ include "webhook.labels" . | nindent 4 }}
+  annotations:
+    cert-manager.io/inject-ca-from: {{ include "webhook.certificate" . }}
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: {{ include "webhook.fullname" . }}
+      namespace: {{ .Release.Namespace }}
+      path: /validate-networking-aurora-gc-ca-v1-podtracker
+  failurePolicy: Fail
+  name: vpodtracker.kb.io
+  rules:
+  - apiGroups:
+    - networking.aurora.gc.ca
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - podtrackers
+  sideEffects: None
+{{- end -}}

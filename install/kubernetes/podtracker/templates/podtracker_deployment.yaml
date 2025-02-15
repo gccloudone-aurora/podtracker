@@ -1,0 +1,111 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "podtracker.fullname" . }}
+  labels: {{- include "podtracker.labels" . | nindent 4 }}
+spec:
+  {{- if .Values.leaderElectionEnabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- else }}
+  replicas: 1
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "podtracker.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "podtracker.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "podtracker.serviceAccountName" . }}
+      priorityClassName: {{ .Values.priorityClassName }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      terminationGracePeriodSeconds: 10
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if (or (.Values.prometheus.enabled) (.Values.webhooksEnabled)) }}
+          ports:
+            {{- if .Values.webhooksEnabled }}
+            - name: webhook-server
+              containerPort: 9443
+              protocol: TCP
+            {{- end }}
+            {{- if and .Values.prometheus.enabled (or .Values.prometheus.servicemonitor.enabled .Values.prometheus.podmonitor.enabled)}}
+            - name: http-metrics
+              containerPort: {{ default 9003 .Values.prometheus.servicemonitor.targetPort }}
+              protocol: TCP
+            {{- end }}
+          {{- end }}
+          {{- if .Values.webhooksEnabled }}
+          volumeMounts:
+            - name: {{ include "webhook.name" . }}-cert
+              mountPath: /tmp/podtracker-webhook-server/serving-certs
+              readOnly: true
+          {{- end }}
+          command:
+          - /podtracker
+          args:
+          {{- if .Values.leaderElectionEnabled }}
+          - --leader-elect
+          {{- end }}
+          {{- if (not .Values.webhooksEnabled) }}
+          - --disable-webhooks
+          {{- end }}
+          - --metrics-bind-address
+          - ":9003"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+            successThreshold: 1
+            timeoutSeconds: 1
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+            successThreshold: 1
+            timeoutSeconds: 2
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- if .Values.webhooksEnabled }}
+      volumes:
+      - name: {{ include "webhook.name" . }}-cert
+        secret:
+          defaultMode: 420
+          secretName: {{ include "webhook.name" . }}-server-cert
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

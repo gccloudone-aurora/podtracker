@@ -1,0 +1,23 @@
+{{- if .Values.webhooksEnabled -}}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "webhook.fullname" . }}-issuer
+  labels: {{ include "webhook.labels" . | nindent 4 }}
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "webhook.fullname" . }}-cert
+  labels: {{ include "webhook.labels" . | nindent 4 }}
+spec:
+  dnsNames:
+  - "{{ include "webhook.fullname" . }}.{{ .Release.Namespace }}.svc"
+  - "{{ include "webhook.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local"
+  issuerRef:
+    kind: Issuer
+    name: {{ include "webhook.fullname" . }}-issuer
+  secretName: {{ include "webhook.name" . }}-server-cert
+{{- end -}}

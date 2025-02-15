@@ -1,0 +1,199 @@
+# -- specifies whether or not to enable leader-election for the podtracker controller
+leaderElectionEnabled: true
+
+# -- number of replicas to create for the controller
+replicaCount: 2
+
+# -- enable default and validating webhooks
+webhooksEnabled: true
+
+image:
+  # -- the source image repository
+  repository: aurora/podtracker
+  # -- the image pull policy
+  # -- can be one of "Always", "IfNotPresent", "Never"
+  pullPolicy: IfNotPresent
+  # -- Overrides the image tag whose default is the chart appVersion.
+  # tag: "1.0.0"
+
+# -- specifies credentials for a private registry to pull source image
+imagePullSecrets: []
+  # - name: image-pull-secret-name
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # -- specifies whether a service account should be created
+  create: true
+  # -- annotations to add to the service account
+  annotations: {}
+  # -- the name of the service account to use.
+  # -- if not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# -- configuration options for deployment of a PodTracker CR with this chart
+podtrackerConfiguration: []
+# - name: ""
+#   backendWriterConfig: {}
+#   nsToWatch: []
+
+# -- indicates the Pod priority and hence importance of a Pod relative to other Pods.
+priorityClassName: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext:
+  runAsNonRoot: true
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsUser: 1000
+
+rbac:
+  # -- should rbac resources be created for podtracker
+  create: true
+
+resources: {}
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+networkPolicies:
+  # -- specifies whether or not to deploy network policies
+  enabled: false
+  # -- defines additional network policies to install for podtracker
+  # -- acceptable input includes a name followed by a valid NetworkPolicy spec
+  extraPolicies: []
+  # - name: sample-policy
+  #   spec:
+  #     podSelector: {}
+  #     policyTypes:
+  #     - Ingress
+  #     - Egress
+  #     ingress:
+  #     - from:
+  #       - podSelector: {}
+  #     egress:
+  #     - to:
+  #       - podSelector: {}
+
+prometheus:
+  # -- Enable Prometheus monitoring for the podtracker controller to use with the
+  # -- Prometheus Operator. Either `prometheus.servicemonitor.enabled` or
+  # -- `prometheus.podmonitor.enabled` can be used to create a ServiceMonitor/PodMonitor
+  # -- resource.
+  enabled: true
+  servicemonitor:
+    # -- Create a ServiceMonitor to add podtracker to Prometheus.
+    enabled: true
+
+    # -- Specifies the `prometheus` label on the created ServiceMonitor. This is
+    # -- used when different Prometheus instances have label selectors matching
+    # -- different ServiceMonitors.
+    prometheusInstance: default
+
+    # -- The target port to set on the ServiceMonitor. This must match the port that the
+    # -- podtracker controller is listening on for metrics.
+    targetPort: 9003
+
+    # -- The path to scrape for metrics.
+    path: /metrics
+
+    # -- The interval to scrape metrics.
+    interval: 60s
+
+    # -- The timeout before a metrics scrape fails.
+    scrapeTimeout: 30s
+
+    # -- Additional labels to add to the ServiceMonitor.
+    labels: {}
+
+    # -- Additional annotations to add to the ServiceMonitor.
+    annotations: {}
+
+    # -- Keep labels from scraped data, overriding server-side labels.
+    honorLabels: false
+
+    # -- EndpointAdditionalProperties allows setting additional properties on the
+    # -- endpoint such as relabelings, metricRelabelings etc.
+    #
+    # For example:
+    #  endpointAdditionalProperties:
+    #   relabelings:
+    #   - action: replace
+    #     sourceLabels:
+    #     - __meta_kubernetes_pod_node_name
+    #     targetLabel: instance
+    #
+    # +docs:property
+    endpointAdditionalProperties: {}
+
+  # Note that you can not enable both PodMonitor and ServiceMonitor as they are mutually exclusive. Enabling both will result in a error.
+  podmonitor:
+    # -- Create a PodMonitor to add podtracker to Prometheus.
+    enabled: false
+
+    # -- Specifies the `prometheus` label on the created PodMonitor. This is
+    # -- used when different Prometheus instances have label selectors matching
+    # -- different PodMonitors.
+    prometheusInstance: default
+
+    # -- The path to scrape for metrics.
+    path: /metrics
+
+    # -- The interval to scrape metrics.
+    interval: 60s
+
+    # -- The timeout before a metrics scrape fails.
+    scrapeTimeout: 30s
+
+    # -- Additional labels to add to the PodMonitor.
+    labels: {}
+
+    # -- Additional annotations to add to the PodMonitor.
+    annotations: {}
+
+    # -- Keep labels from scraped data, overriding server-side labels.
+    honorLabels: false
+
+    # -- EndpointAdditionalProperties allows setting additional properties on the
+    # -- endpoint such as relabelings, metricRelabelings etc.
+    #
+    # For example:
+    #  endpointAdditionalProperties:
+    #   relabelings:
+    #   - action: replace
+    #     sourceLabels:
+    #     - __meta_kubernetes_pod_node_name
+    #     targetLabel: instance
+    #
+    # +docs:property
+    endpointAdditionalProperties: {}
+
+# -- specifies a selector for determining where the podtracker controller pods will be scheduled
+nodeSelector: {}
+
+# -- specifies which taints can be tolerated by the podtracker controller
+tolerations: []
+
+# -- specifies pod affinities and anti-affinities for the podtracker deployment
+affinity: {}
+
+# -- specifies how pods should be scheduled across multiple nodes
+topologySpreadConstraints: []
+  # - maxSkew: 1
+  #   topologyKey: kubernetes.io/hostname
+  #   whenUnsatisfiable: DoNotSchedule
+  #   labelSelector:
+  #     matchLabels:
+  #       app.kubernetes.io/name: podtracker
+  #   nodeAffinityPolicy: Honor
+  #   nodeTaintsPolicy: Honor

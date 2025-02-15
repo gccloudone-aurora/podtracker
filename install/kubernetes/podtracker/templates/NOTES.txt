@@ -1,0 +1,19 @@
+=========================
+== PODTRACKER DEPLOYED ==
+=========================
+
+{{- if eq (len .Values.podtrackerConfiguration) 0 -}}
+No PodTracker CRs were deployed.
+{{- else -}}
+The following PodTrackers have been deployed along-side the operator
+
+{{ range .Values.podtrackerConfiguration }}
+- name: {{ .name }}
+  {{- if .backendWriterConfig -}}
+  backendWriterConfig: {{ toYaml .backendWriterConfig | nindent 4 }}
+  {{- end -}}
+  {{- if .nsToWatch -}}
+  nsToWatch: {{ toYaml .nsToWatch | nindent 4 }}
+  {{- end -}}
+{{ end }}
+{{- end -}}

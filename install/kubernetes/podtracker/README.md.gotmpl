@@ -1,0 +1,45 @@
+{{ template "chart.header" . }}
+{{ template "chart.description" . }}
+
+{{ template "chart.versionBadge" . }}{{ template "chart.typeBadge" . }}{{ template "chart.appVersionBadge" . }}
+
+{{ template "chart.description" . }}
+
+{{ template "chart.homepageLine" . }}
+
+{{ template "chart.maintainersSection" . }}
+
+{{ template "chart.sourcesSection" . }}
+
+{{ template "chart.requirementsSection" . }}
+
+## Installing the Chart
+
+To install the chart:
+
+```console
+helm repo add aurora-artifactory https://artifactory.ssc-spc.gc.ca/helm/to-be-created
+helm repo update
+helm upgrade --install {{ template "chart.name" . }} aurora-artifactory/{{ template "chart.name" . }}
+```
+
+## Default Network Policies
+
+While you can extend Network Policies through the [provided Helm chart](/install/kubernetes/podtracker/), the following is provided be default.
+
+```mermaid
+flowchart LR
+    subgraph namespace[podtracker-namespace]
+    direction LR
+    PodTracker <==>|allowed| Pod
+    Pod
+    end
+    subgraph othernamespace[other-namespace]
+    PodTracker <.->|denied| ANY[** ANY **]
+    end
+```
+> PodTracker by default can communicate with anything in its own namespace and anything in its own namespace can communicate with it.
+>
+> Any other traffic is denied by default
+
+{{ template "chart.valuesSection" . }}

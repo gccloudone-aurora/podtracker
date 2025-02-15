@@ -1,0 +1,15 @@
+apiVersion: networking.aurora.gc.ca/v1
+kind: PodTracker
+metadata:
+  labels:
+    app.kubernetes.io/name: podtracker
+    app.kubernetes.io/instance: podtracker-sample
+    app.kubernetes.io/part-of: podtracker
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: podtracker
+  name: podtracker-sample
+spec:
+  nsToWatch: []
+  backendWriterConfig:
+    stdout:
+      enabled: true
