@@ -1,0 +1,26 @@
+apiVersion: v1
+entries:
+  podtracker:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2025-02-26T02:15:24.058052054Z"
+    description: A Helm chart for deploying PodTracker to a Kubernetes cluster
+    digest: ffd6b098468d12ebe818cd9783b38701ea5f6a4a26ccf3878270a8d10b0820cd
+    home: https://aurora.gccloudone.alpha.canada.ca
+    keywords:
+    - pods
+    - networking
+    - auditing
+    - security
+    kubeVersion: '>= 1.16.0-0'
+    maintainers:
+    - email: aurora-aurore@ssc-spc.gc.ca
+      name: Aurora / Aurore
+    name: podtracker
+    sources:
+    - https://github.com/gccloudone-aurora/podtracker
+    type: application
+    urls:
+    - https://github.com/gccloudone-aurora/podtracker/releases/download/podtracker-1.0.0/podtracker-1.0.0.tgz
+    version: 1.0.0
+generated: "2025-02-26T02:15:24.058061422Z"
