@@ -2,7 +2,7 @@ ARG IMAGE_REPOSITORY=docker.io
 ARG TARGETARCH
 ARG TARGETOS=linux
 
-FROM ${IMAGE_REPOSITORY}/golang:1.22 as builder
+FROM ${IMAGE_REPOSITORY}/golang:1.26.0-alpine3.23 as builder
 
 WORKDIR /workspace
 
